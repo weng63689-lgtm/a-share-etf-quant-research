@@ -1,0 +1,7 @@
+symbol,exchange,name,tracking_index,asset_class,lot_size,settlement_cycle,verified_on,official_source_url,notes
+510050,SSE,上证50ETF华夏,上证50指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://www.sse.com.cn/assortment/fund/list/?type=5,大盘宽基候选
+510300,SSE,沪深300ETF华泰柏瑞,沪深300指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://www.sse.com.cn/disclosure/fund/etflist/detail.shtml?etfClass=03&fundid=510300&type=008,基准相关宽基候选
+510500,SSE,中证500ETF南方,中证500指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://www.sse.com.cn/disclosure/fund/announcement/c/new/2026-03-20/512100_20260320_FBTK.pdf,中盘宽基候选
+512100,SSE,中证1000ETF南方,中证1000指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://www.sse.com.cn/disclosure/fund/announcement/c/new/2026-03-20/512100_20260320_FBTK.pdf,小盘宽基候选
+588000,SSE,科创50ETF华夏,上证科创板50成份指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://www.sse.com.cn/disclosure/fund/etflist/detail.shtml?fundid=588000,科创风格候选
+159915,SZSE,创业板ETF易方达,创业板指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://www.szse.cn/www/lawrules/rule/derivative/t20220916_595887.html,创业成长风格候选

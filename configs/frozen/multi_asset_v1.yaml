@@ -1,0 +1,37 @@
+version: 1
+frozen_on: 2026-10-29
+universe: research_universe_v3.csv
+description: Domestic multi-asset ETF trend rotation with 10 percent volatility target
+strategy:
+  rebalance_policy: threshold_based
+  signal_frequency: monthly
+  benchmark: CSI300
+  allow_cash: true
+  use_leverage: false
+  momentum_days: 120
+  trend_days: 200
+  volatility_days: 20
+  selection_count: 3
+  retention_rank: 5
+  target_exposure: 0.90
+  max_single_weight: 0.35
+  min_trade_weight: 0.04
+  min_rebalance_turnover: 0.10
+  max_rebalance_turnover: 0.50
+  drawdown_reduce_1: 0.08
+  drawdown_reduce_2: 0.12
+  drawdown_stop: 0.16
+  drawdown_level_1_exposure: 0.70
+  drawdown_level_2_exposure: 0.40
+  drawdown_cooldown_days: 20
+  drawdown_reentry_exposure: 0.40
+  momentum_windows: [120]
+  trend_windows: [200]
+  trend_consensus_ratio: 1.0
+  rebalance_frequency: monthly
+  market_filter: false
+  benchmark_trend_days: 200
+  defensive_exposure: 0.40
+  portfolio_method: volatility_target
+  target_volatility: 0.10
+  covariance_days: 60

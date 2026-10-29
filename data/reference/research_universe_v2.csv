@@ -1,0 +1,15 @@
+symbol,exchange,name,tracking_index,asset_class,lot_size,settlement_cycle,verified_on,official_source_url,notes
+510050,SSE,上证50ETF华夏,上证50指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://etf.sse.com.cn/,大盘宽基
+510300,SSE,沪深300ETF华泰柏瑞,沪深300指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://etf.sse.com.cn/,核心宽基
+510500,SSE,中证500ETF南方,中证500指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://etf.sse.com.cn/,中盘宽基
+512100,SSE,中证1000ETF南方,中证1000指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://etf.sse.com.cn/,小盘宽基
+588000,SSE,科创50ETF华夏,上证科创板50成份指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://etf.sse.com.cn/,科创板
+159915,SZSE,创业板ETF易方达,创业板指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://www.szse.cn/,创业板
+512890,SSE,红利低波ETF华泰柏瑞,中证红利低波动指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://etf.sse.com.cn/,红利低波
+512880,SSE,证券ETF国泰,中证全指证券公司指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://etf.sse.com.cn/,证券行业
+512800,SSE,银行ETF华宝,中证银行指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://etf.sse.com.cn/,银行行业
+512660,SSE,军工ETF国泰,中证军工指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://etf.sse.com.cn/,国防军工
+159928,SZSE,消费ETF汇添富,中证主要消费指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://www.szse.cn/,主要消费
+159949,SZSE,创业板50ETF华安,创业板50指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://www.szse.cn/,创业板成长
+512170,SSE,医疗ETF华宝,中证医疗指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://etf.sse.com.cn/,医疗行业
+512480,SSE,半导体ETF国联安,中证全指半导体产品与设备指数,DOMESTIC_EQUITY_ETF,100,T+1,2026-10-29,https://etf.sse.com.cn/,半导体行业

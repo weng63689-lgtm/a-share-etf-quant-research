@@ -1,0 +1,70 @@
+project:
+  name: a-share-etf-quant
+  timezone: Asia/Shanghai
+  base_currency: CNY
+
+strategy:
+  asset_type: domestic_equity_etf
+  rebalance_policy: threshold_based
+  signal_frequency: weekly
+  benchmark: CSI300
+  allow_cash: true
+  use_leverage: false
+  momentum_days: 120
+  trend_days: 200
+  volatility_days: 20
+  selection_count: 3
+  retention_rank: 5
+  target_exposure: 0.95
+  max_single_weight: 0.45
+  min_trade_weight: 0.03
+  min_rebalance_turnover: 0.05
+  max_rebalance_turnover: 0.50
+  drawdown_reduce_1: 0.08
+  drawdown_reduce_2: 0.12
+  drawdown_stop: 0.16
+  drawdown_level_1_exposure: 0.70
+  drawdown_level_2_exposure: 0.40
+  drawdown_cooldown_days: 20
+  drawdown_reentry_exposure: 0.40
+
+risk:
+  capital_cny: 500000
+  target_max_drawdown: 0.20
+  max_single_etf_weight: 0.50
+  target_holding_count: 3
+
+execution:
+  live_trading_enabled: false
+  broker: CITIC_SECURITIES
+  order_lot_size: 100
+
+accounting:
+  initial_cash: 500000
+  lot_size: 100
+  share_adjustment_return_gap: 0.05
+
+costs:
+  commission_rate: 0.0003
+  minimum_commission_cny: 5
+  stamp_duty_rate: 0
+  transfer_fee_rate: 0
+  base_slippage_bps: 2
+  impact_coefficient_bps: 5
+  impact_reference_participation: 0.01
+  impact_exponent: 0.5
+  max_participation: 0.10
+  stress_multipliers: [1, 2, 3]
+
+data:
+  development_provider: akshare
+  calendar_start: 2005-01-01
+  history_start: 2012-01-01
+  history_min_coverage_ratio: 0.98
+  history_max_missing_trade_days: 10
+  history_max_missing_gap_days: 10
+  history_max_daily_return_abs: 0.22
+  raw_data_retention: true
+  fail_on_validation_error: true
+  database: data/market.duckdb
+
