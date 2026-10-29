@@ -1,6 +1,18 @@
 # A股ETF量化交易项目
 
+[![Python checks](https://github.com/weng63689-lgtm/a-share-etf-quant-research/actions/workflows/ci.yml/badge.svg)](https://github.com/weng63689-lgtm/a-share-etf-quant-research/actions/workflows/ci.yml)
+
 这是一个面向个人账户的A股ETF量化研究项目。第一版使用日频数据，只做多，不使用杠杆。当前阶段只建设研究、回测和模拟交易基础，不连接真实券商账户。
+
+作品集读者建议先看 [项目案例摘要](PORTFOLIO.md)，其中集中说明系统架构、技术亮点、关键结果和已知限制。
+
+## 项目概览
+
+- 20只境内ETF，覆盖股票、债券、黄金和货币。
+- 从数据校验、账户、公司行动、T+1、成本、回测到离线模拟盘的完整链路。
+- 59项自动测试与GitHub Actions持续集成。
+- 对样本外、参数邻域、成本压力和失败原因进行完整披露。
+- 最近样本外未跑赢沪深300，项目明确拒绝进入真实资金交易。
 
 ## 当前进度
 
@@ -30,7 +42,7 @@
 在PowerShell中执行：
 
 ```powershell
-cd F:\量化\A股ETF量化
+cd a-share-etf-quant-research
 uv sync --dev
 uv run quant-check
 uv run pytest
@@ -116,7 +128,7 @@ uv run quant-backtest run
 uv run quant-backtest summary
 ```
 
-第一版趋势动量策略已接入账户、公司行动、T+1、涨跌停和成本模型。当前1倍成本下累计收益高于沪深300，但最大回撤约45%，未达到20%风险目标，因此仅作为研究基线。详见 [第八步基线策略回测说明](docs/08_基线策略回测说明.md) 和 [首份回测报告](runs/backtest_v1/report.md)。
+第一版趋势动量策略已接入账户、公司行动、T+1、涨跌停和成本模型，但最大回撤未达到风险目标，因此仅作为研究基线。详见 [第八步基线策略回测说明](docs/08_基线策略回测说明.md)。
 
 ## 运行稳健性检验
 
@@ -125,7 +137,7 @@ uv run quant-robustness run
 uv run quant-robustness summary
 ```
 
-最近约3年的样本外，原始规则累计收益-0.72%、最大回撤-28.66%；回撤控制仍为-8.15%收益和-22.26%回撤。18组开发期参数均未达到20%回撤目标，因此策略仍未通过稳健性验收。详见 [第九步稳健性检验说明](docs/09_稳健性检验说明.md) 和 [稳健性报告](runs/robustness_v1/report.md)。
+最近约3年的样本外没有通过收益和回撤验收；18组开发期参数也没有组合达到20%回撤目标。详见 [第九步稳健性检验说明](docs/09_稳健性检验说明.md)。
 
 ## 运行失败归因
 
@@ -134,7 +146,7 @@ uv run quant-diagnose run
 uv run quant-diagnose summary
 ```
 
-开发期归因显示：上涨市场收益捕获率约76.8%，选中ETF未来20日平均收益反而比全部合格候选低约0.06个百分点，年化单边换手约3.73倍。详见 [第十步失败归因说明](docs/10_失败归因说明.md) 和 [归因报告](runs/diagnostics_v1/report.md)。
+开发期归因显示：上涨市场收益捕获率约76.8%，选中ETF未来20日平均收益反而比全部合格候选低约0.06个百分点，年化单边换手约3.73倍。详见 [第十步失败归因说明](docs/10_失败归因说明.md)。
 
 ## 运行第二版候选
 
@@ -181,7 +193,7 @@ uv run quant-risk-multiasset run
 uv run quant-risk-multiasset summary
 ```
 
-资产范围仍排除跨境、杠杆、反向和场外产品。20只境内ETF的多资产版本在内部验证期实现30.97%收益和-5.52%最大回撤，3倍成本下仍有正超额。详见 [第十五步境内多资产说明](docs/15_境内多资产风险预算.md) 和 [风险预算报告](runs/risk_budget_multi_asset/report.md)。
+资产范围仍排除跨境、杠杆、反向和场外产品。20只境内ETF的多资产版本在内部验证期实现30.97%收益和-5.52%最大回撤，3倍成本下仍有正超额。详见 [第十五步境内多资产说明](docs/15_境内多资产风险预算.md)。
 
 ## 最终前向验证
 
@@ -201,7 +213,7 @@ uv run quant-paper run-latest
 uv run quant-paper status
 ```
 
-模拟盘只使用本地数据，不连接券商或发送真实委托。历史回放已验证727个日快照、107个唯一订单ID和重复运行幂等。详见 [第十七步模拟交易闭环说明](docs/17_模拟交易闭环说明.md) 和 [模拟盘日报](runs/paper/latest_report.md)。
+模拟盘只使用本地数据，不连接券商或发送真实委托。历史回放已验证727个日快照、107个唯一订单ID和重复运行幂等。详见 [第十七步模拟交易闭环说明](docs/17_模拟交易闭环说明.md)。
 
 ## 每日运行
 
@@ -255,9 +267,11 @@ Copy-Item .env.example .env
 
 ## GitHub连接
 
-项目已经是本地Git仓库，但当前没有远程仓库，也没有上传任何文件。后续连接GitHub时，建议建立私有仓库并使用GitHub CLI登录。连接前先确认 `git status` 中没有 `.env`、数据文件或账户信息。
+公开仓库地址：
 
-GitHub Actions配置位于 `.github/workflows/ci.yml`。代码上传后，它会自动恢复锁定环境并运行代码检查和测试。
+`https://github.com/weng63689-lgtm/a-share-etf-quant-research`
+
+仓库不包含原始行情、处理后的Parquet、DuckDB、运行报告、模拟账户状态、虚拟环境或密钥。GitHub Actions会在每次推送后运行Ruff和pytest。
 
 ## 目录说明
 
