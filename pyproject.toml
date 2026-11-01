@@ -33,10 +33,13 @@ quant-factor-expanded = "a_share_quant.backtest.expanded_factor_cli:main"
 quant-risk-budget = "a_share_quant.backtest.risk_budget_cli:main"
 quant-multiasset = "a_share_quant.data.multi_asset_cli:main"
 quant-risk-multiasset = "a_share_quant.backtest.multi_asset_risk_cli:main"
+quant-optimize = "a_share_quant.backtest.asset_class_optimization_cli:main"
 quant-forward-check = "a_share_quant.backtest.forward_validation_cli:main"
 quant-paper = "a_share_quant.paper.cli:main"
 quant-daily-update = "a_share_quant.data.incremental_cli:main"
 quant-paper-gui = "a_share_quant.paper.gui:main"
+quant-qd-deploy = "a_share_quant.integrations.quantdinger:main"
+quant-qd-status = "a_share_quant.integrations.quantdinger_status:main"
 
 [dependency-groups]
 dev = [

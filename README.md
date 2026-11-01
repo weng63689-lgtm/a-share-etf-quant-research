@@ -10,7 +10,7 @@
 
 - 20只境内ETF，覆盖股票、债券、黄金和货币。
 - 从数据校验、账户、公司行动、T+1、成本、回测到离线模拟盘的完整链路。
-- 59项自动测试与GitHub Actions持续集成。
+- 78项自动测试与GitHub Actions持续集成。
 - 对样本外、参数邻域、成本压力和失败原因进行完整披露。
 - 最近样本外未跑赢沪深300，项目明确拒绝进入真实资金交易。
 
@@ -75,6 +75,14 @@ uv run quant-data validate-history
 ```
 
 原始未复权行情、前复权行情和清洗结果分别保存。质量检查失败时，不会覆盖上一版已验证的 `etf_daily`。详细字段和判断方法见 [第四步日线行情说明](docs/04_日线行情说明.md)。
+
+每日增量更新还接入了 A-Stock-Data 的腾讯K线方案。A-Stock-Data提供未复权与前复权价格，原数据源继续提供成交额和公司行动；只有日期覆盖及价格交叉校验通过后才覆盖价格。详见 [A-Stock-Data数据接入](docs/25_A-Stock-Data数据接入.md)。
+
+可以单独执行全部ETF的双源价格审计：
+
+```powershell
+uv run quant-daily-update cross-check --days 10
+```
 
 ## 运行账户模型
 
@@ -204,6 +212,17 @@ uv run quant-forward-check summary
 
 冻结版本在2023-10-30至2026-10-29取得10.91%收益、-8.02%最大回撤，但同期沪深300上涨12.78%，未通过正超额条件。详见 [第十六步前向验证说明](docs/16_冻结策略前向验证.md)。
 
+## 运行策略优化实验
+
+```powershell
+uv run quant-optimize run
+uv run quant-optimize summary
+```
+
+本轮预先固定了冻结版、回撤控制版以及三组资产类别风险预算方案，训练期和内部验证期用于选择，最终样本外只运行一次。结论是没有任何新版本取代冻结v1，详见 [第二十一步策略优化实验](docs/23_策略优化实验.md)。
+
+QuantDinger中还保留了一个独立的8%单品种止损候选，与原策略并行模拟。它改善了风险指标，但尚不足以替代冻结v1。宽基核心加卫星、12%目标波动率和移动止损构成的V3实验未通过内部验证，因此没有部署。
+
 ## 运行离线模拟盘
 
 ```powershell
@@ -234,6 +253,29 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_daily_paper.ps1 -AsOf 202
 详细机制见 [第十八步每日增量更新说明](docs/18_每日增量更新说明.md)。
 
 图形界面和使用步骤见 [第十九步模拟盘图形界面说明](docs/19_模拟盘图形界面说明.md)。
+
+## QuantDinger信号模式集成
+
+项目包含一份符合QuantDinger Strategy API V2的20只境内ETF策略源码，以及一个只创建 `signal` 模式策略的部署工具。工具不创建实盘策略，不连接券商。
+
+```powershell
+# 不连接服务器，只检查部署配置
+powershell -ExecutionPolicy Bypass -File .\scripts\deploy_quantdinger.ps1 -DryRun
+```
+
+安装并启动本地QuantDinger、配置最小权限Agent Token后，可以执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\deploy_quantdinger.ps1
+```
+
+详细步骤、权限边界和两套系统数据口径差异见 [QuantDinger集成说明](docs/22_QuantDinger集成说明.md)。
+
+两个并行信号策略的状态可以用只读命令查看：
+
+```powershell
+uv run quant-qd-status
+```
 
 开发阶段使用AKShare适配器。程序会优先尝试ETF实时接口，失败时自动切换到备用列表接口。原始抓取结果、标准化结果和抓取来源分别保存，不能把免费网站接口当作实盘唯一数据源。
 

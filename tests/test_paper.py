@@ -80,3 +80,50 @@ def test_paper_data_fingerprint_ignores_future_rows() -> None:
     )
 
     assert original == extended
+
+
+def test_paper_data_fingerprint_ignores_retrieval_metadata() -> None:
+    dates = pd.to_datetime(["2026-01-05", "2026-01-06"])
+    daily = pd.DataFrame(
+        {
+            "symbol": ["510300", "510300"],
+            "trade_date": dates,
+            "close": [1.0, 1.1],
+            "retrieved_at": ["first", "first"],
+        }
+    )
+    actions = pd.DataFrame(
+        {
+            "symbol": ["510300"],
+            "event_date": [dates[0]],
+            "action_type": ["cash_distribution"],
+            "cash_per_unit": [0.01],
+            "share_multiplier": [1.0],
+            "retrieved_at": ["first"],
+        }
+    )
+    benchmark = pd.DataFrame(
+        {
+            "trade_date": dates,
+            "close": [4000.0, 4010.0],
+            "retrieved_at": ["first", "first"],
+        }
+    )
+
+    original = PaperTradingPipeline._data_fingerprint(
+        daily,
+        actions,
+        benchmark,
+        through=dates[-1],
+    )
+    daily["retrieved_at"] = "second"
+    actions["retrieved_at"] = "second"
+    benchmark["retrieved_at"] = "second"
+    refreshed = PaperTradingPipeline._data_fingerprint(
+        daily,
+        actions,
+        benchmark,
+        through=dates[-1],
+    )
+
+    assert original == refreshed

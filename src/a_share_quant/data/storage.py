@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from pathlib import Path
 from uuid import uuid4
 
@@ -25,10 +26,19 @@ class DataStore:
         frame.to_parquet(temporary, index=False)
         os.replace(temporary, path)
 
-    def save_raw(self, frame: pd.DataFrame, dataset: str, source: str) -> Path:
+    def save_raw(
+        self,
+        frame: pd.DataFrame,
+        dataset: str,
+        source: str,
+        *,
+        namespace: str = "akshare",
+    ) -> Path:
         stamp = pd.Timestamp.now(tz="Asia/Shanghai").strftime("%Y%m%dT%H%M%S%z")
-        safe_source = source.replace(".", "_")
-        path = self.raw_dir / f"{dataset}_{safe_source}_{stamp}.parquet"
+        safe_source = re.sub(r"[^A-Za-z0-9._-]+", "_", source)
+        raw_dir = self.project_root / "data" / "raw" / namespace
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        path = raw_dir / f"{dataset}_{safe_source}_{stamp}.parquet"
         self._atomic_parquet(frame, path)
         return path
 
@@ -404,6 +414,10 @@ class DataStore:
 
     def save_daily_update_report(self, payload: dict[str, object]) -> Path:
         path = self.processed_dir / "daily_update_report.json"
+        return self._atomic_json(path, payload)
+
+    def save_price_source_report(self, payload: dict[str, object]) -> Path:
+        path = self.processed_dir / "a_stock_data_crosscheck.json"
         return self._atomic_json(path, payload)
 
     @staticmethod

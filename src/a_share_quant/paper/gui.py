@@ -1,5 +1,6 @@
 """Small local Tkinter console for the offline ETF paper-trading workflow."""
 
+import ctypes
 import json
 import os
 import shutil
@@ -9,13 +10,30 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import messagebox, scrolledtext
 
+APP_TITLE = "A股ETF量化 · 模拟盘"
+
+
+def _activate_existing_window() -> bool:
+    if os.name != "nt":
+        return False
+    try:
+        user32 = ctypes.windll.user32
+        window_handle = user32.FindWindowW(None, APP_TITLE)
+        if not window_handle:
+            return False
+        user32.ShowWindow(window_handle, 9)
+        user32.SetForegroundWindow(window_handle)
+        return True
+    except Exception:
+        return False
+
 
 class PaperConsole:
     def __init__(self, project_root: Path) -> None:
         self.project_root = project_root
         self.uv_executable = shutil.which("uv")
         self.root = tk.Tk()
-        self.root.title("A股ETF量化 · 模拟盘")
+        self.root.title(APP_TITLE)
         self.root.geometry("860x620")
         self.root.minsize(760, 520)
         self.root.configure(bg="#f4f6f8")
@@ -238,6 +256,8 @@ class PaperConsole:
 
 
 def main() -> None:
+    if _activate_existing_window():
+        return
     project_root = Path(__file__).resolve().parents[3]
     PaperConsole(project_root).run()
 

@@ -278,10 +278,53 @@ class PaperTradingPipeline:
         benchmark_part = benchmark[
             pd.to_datetime(benchmark["trade_date"]) <= through
         ].sort_values("trade_date")
+        daily_columns = [
+            "symbol",
+            "exchange",
+            "exchange_symbol",
+            "trade_date",
+            "open",
+            "high",
+            "low",
+            "close",
+            "volume",
+            "turnover",
+            "amplitude_pct",
+            "change_pct",
+            "change_amount",
+            "turnover_rate_pct",
+            "adj_open",
+            "adj_high",
+            "adj_low",
+            "adj_close",
+            "adjustment_factor",
+            "adjustment_method",
+        ]
+        action_columns = [
+            "symbol",
+            "event_date",
+            "action_type",
+            "cash_per_unit",
+            "share_multiplier",
+        ]
+        benchmark_columns = [
+            "benchmark",
+            "trade_date",
+            "open",
+            "high",
+            "low",
+            "close",
+            "volume",
+        ]
         digest = hashlib.sha256()
-        for frame in (daily_part, action_part, benchmark_part):
+        for frame, columns in (
+            (daily_part, daily_columns),
+            (action_part, action_columns),
+            (benchmark_part, benchmark_columns),
+        ):
+            stable_frame = frame[[column for column in columns if column in frame.columns]]
             digest.update(
-                pd.util.hash_pandas_object(frame, index=False).to_numpy().tobytes()
+                pd.util.hash_pandas_object(stable_frame, index=False).to_numpy().tobytes()
             )
         return digest.hexdigest()
 

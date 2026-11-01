@@ -45,7 +45,7 @@ T+1、整手、停牌、涨跌停和成交容量
 - 历史数据回填时，模拟盘会停止而不是静默继续。
 - 模拟订单ID具有确定性，重复运行不会重复下单。
 - 冻结配置与算法实现均记录SHA-256指纹。
-- 59项自动测试、Ruff和GitHub Actions持续集成。
+- 78项自动测试、Ruff和GitHub Actions持续集成。
 
 ## 严谨的研究结论
 
@@ -66,6 +66,9 @@ T+1、整手、停牌、涨跌停和成交容量
 - [策略范围与需求](https://github.com/weng63689-lgtm/a-share-etf-quant-research/blob/main/01_策略范围与需求说明.md)
 - [每日增量更新](https://github.com/weng63689-lgtm/a-share-etf-quant-research/blob/main/docs/18_每日增量更新说明.md)
 - [模拟盘图形界面](https://github.com/weng63689-lgtm/a-share-etf-quant-research/blob/main/docs/19_模拟盘图形界面说明.md)
+- [QuantDinger信号模式集成](https://github.com/weng63689-lgtm/a-share-etf-quant-research/blob/main/docs/22_QuantDinger集成说明.md)
+- [策略优化实验](https://github.com/weng63689-lgtm/a-share-etf-quant-research/blob/main/docs/23_策略优化实验.md)
+- [A-Stock-Data数据接入](https://github.com/weng63689-lgtm/a-share-etf-quant-research/blob/main/docs/25_A-Stock-Data数据接入.md)
 - [冻结策略前向验证](https://github.com/weng63689-lgtm/a-share-etf-quant-research/blob/main/docs/16_冻结策略前向验证.md)
 
 ## 使用方式

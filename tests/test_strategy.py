@@ -297,6 +297,190 @@ def test_backtest_engine_uses_next_session_signal(tmp_path) -> None:
     assert result.snapshots["reconciled"].all()
 
 
+def test_backtest_engine_exits_after_confirmed_position_stop(tmp_path) -> None:
+    dates = pd.to_datetime(["2026-01-05", "2026-01-06", "2026-01-07"])
+    daily = pd.DataFrame(
+        {
+            "symbol": "510300",
+            "trade_date": dates,
+            "open": [10.0, 10.0, 8.9],
+            "high": [10.2, 10.1, 9.0],
+            "low": [9.8, 8.8, 8.7],
+            "close": [10.0, 9.0, 8.8],
+            "turnover": [1_000_000, 1_000_000, 1_000_000],
+            "volume": [1000, 1000, 1000],
+        }
+    )
+    calendar = pd.DataFrame({"calendar_date": dates, "is_open": True})
+    benchmark = pd.DataFrame({"trade_date": dates, "close": [4000.0, 3990.0, 3970.0]})
+    rule = TradingRule(
+        symbol="510300",
+        effective_from=pd.Timestamp("2020-01-01"),
+        effective_to=None,
+        price_limit_pct=Decimal("0.10"),
+        tick_size=Decimal("0.001"),
+        buy_lot_size=100,
+        sell_lot_size=100,
+        settlement_days=1,
+    )
+    cost_model = CostModel(
+        CostConfig(
+            commission_rate=Decimal("0"),
+            minimum_commission=Decimal("0"),
+            stamp_duty_rate=Decimal("0"),
+            transfer_fee_rate=Decimal("0"),
+            base_slippage_bps=Decimal("0"),
+            impact_coefficient_bps=Decimal("0"),
+            impact_reference_participation=Decimal("0.01"),
+            impact_exponent=Decimal("0.5"),
+            max_participation=Decimal("0.10"),
+            stress_multipliers=(Decimal("1"),),
+        )
+    )
+    signal_bundle = SignalBundle(
+        indicators=pd.DataFrame(),
+        rankings=pd.DataFrame(),
+        targets=pd.DataFrame(),
+        execution_targets={dates[1]: {"510300": 0.5}},
+        execution_signals={dates[1]: dates[0]},
+    )
+    config = replace(_config(), position_stop_loss_pct=0.08)
+    engine = StrategyBacktestEngine(
+        tmp_path,
+        strategy_config=config,
+        account_config=AccountConfig(
+            initial_cash=10000,
+            lot_size=100,
+            share_adjustment_return_gap=0.05,
+        ),
+    )
+
+    result = engine.run(
+        daily=daily,
+        actions=pd.DataFrame(
+            columns=[
+                "symbol",
+                "event_date",
+                "action_type",
+                "cash_per_unit",
+                "share_multiplier",
+                "derivation",
+            ]
+        ),
+        calendar=calendar,
+        benchmark=benchmark,
+        signal_bundle=signal_bundle,
+        rule_book=TradingRuleBook([rule]),
+        cost_model=cost_model,
+        scenario="stop-test",
+        stress_multiplier=Decimal("1"),
+        with_costs=False,
+        start_date=dates[0],
+    )
+
+    assert len(result.orders) == 2
+    assert result.orders.iloc[1]["side"] == "SELL"
+    assert result.orders.iloc[1]["execution_date"] == dates[2]
+    assert result.orders.iloc[1]["reason"] == "POSITION_STOP_LOSS"
+    assert result.snapshots.iloc[-1]["holding_count"] == 0
+    assert result.snapshots["reconciled"].all()
+
+
+def test_backtest_engine_trailing_stop_requires_activation(tmp_path) -> None:
+    dates = pd.to_datetime(
+        ["2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08"]
+    )
+    daily = pd.DataFrame(
+        {
+            "symbol": "510300",
+            "trade_date": dates,
+            "open": [10.0, 10.0, 10.4, 9.9],
+            "high": [10.2, 10.7, 10.5, 10.0],
+            "low": [9.8, 9.9, 9.8, 9.7],
+            "close": [10.0, 10.6, 9.95, 9.8],
+            "turnover": [1_000_000] * 4,
+            "volume": [1000] * 4,
+        }
+    )
+    calendar = pd.DataFrame({"calendar_date": dates, "is_open": True})
+    benchmark = pd.DataFrame(
+        {"trade_date": dates, "close": [4000.0, 4010.0, 3990.0, 3980.0]}
+    )
+    rule = TradingRule(
+        symbol="510300",
+        effective_from=pd.Timestamp("2020-01-01"),
+        effective_to=None,
+        price_limit_pct=Decimal("0.10"),
+        tick_size=Decimal("0.001"),
+        buy_lot_size=100,
+        sell_lot_size=100,
+        settlement_days=1,
+    )
+    cost_model = CostModel(
+        CostConfig(
+            commission_rate=Decimal("0"),
+            minimum_commission=Decimal("0"),
+            stamp_duty_rate=Decimal("0"),
+            transfer_fee_rate=Decimal("0"),
+            base_slippage_bps=Decimal("0"),
+            impact_coefficient_bps=Decimal("0"),
+            impact_reference_participation=Decimal("0.01"),
+            impact_exponent=Decimal("0.5"),
+            max_participation=Decimal("0.10"),
+            stress_multipliers=(Decimal("1"),),
+        )
+    )
+    signal_bundle = SignalBundle(
+        indicators=pd.DataFrame(),
+        rankings=pd.DataFrame(),
+        targets=pd.DataFrame(),
+        execution_targets={dates[1]: {"510300": 0.5}},
+        execution_signals={dates[1]: dates[0]},
+    )
+    config = replace(
+        _config(),
+        trailing_stop_pct=0.06,
+        trailing_activation_pct=0.05,
+    )
+    engine = StrategyBacktestEngine(
+        tmp_path,
+        strategy_config=config,
+        account_config=AccountConfig(
+            initial_cash=10000,
+            lot_size=100,
+            share_adjustment_return_gap=0.05,
+        ),
+    )
+
+    result = engine.run(
+        daily=daily,
+        actions=pd.DataFrame(
+            columns=[
+                "symbol",
+                "event_date",
+                "action_type",
+                "cash_per_unit",
+                "share_multiplier",
+                "derivation",
+            ]
+        ),
+        calendar=calendar,
+        benchmark=benchmark,
+        signal_bundle=signal_bundle,
+        rule_book=TradingRuleBook([rule]),
+        cost_model=cost_model,
+        scenario="trailing-stop-test",
+        stress_multiplier=Decimal("1"),
+        with_costs=False,
+        start_date=dates[0],
+    )
+
+    assert len(result.orders) == 2
+    assert result.orders.iloc[1]["reason"] == "POSITION_TRAILING_STOP"
+    assert result.orders.iloc[1]["execution_date"] == dates[3]
+    assert result.snapshots.iloc[-1]["holding_count"] == 0
+
+
 def test_drawdown_control_reenters_after_cooldown() -> None:
     config = _config()
     risk_scale, cooldown, peak = _update_risk_state(

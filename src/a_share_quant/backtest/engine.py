@@ -296,6 +296,8 @@ class StrategyBacktestEngine:
         risk_scale = 1.0
         risk_cooldown = 0
         peak_equity = float(account.initial_cash)
+        previous_session_date: pd.Timestamp | None = None
+        trailing_peaks: dict[str, float] = {}
 
         for trade_date in backtest_dates:
             trade_date = pd.Timestamp(trade_date).normalize()
@@ -306,6 +308,80 @@ class StrategyBacktestEngine:
             has_rebalance = trade_date in execution_targets
             rebalance_turnover = 0.0
             rebalance_orders = 0
+            risk_exit_symbols: set[str] = set()
+
+            stop_loss_pct = self.strategy_config.position_stop_loss_pct
+            trailing_stop_pct = self.strategy_config.trailing_stop_pct
+            trailing_activation_pct = self.strategy_config.trailing_activation_pct
+            has_risk_exit = stop_loss_pct is not None or trailing_stop_pct is not None
+            if has_risk_exit and previous_session_date is not None:
+                for symbol, position in sorted(account.positions.items()):
+                    if position.quantity <= 0 or symbol not in last_close:
+                        continue
+                    previous_close = last_close[symbol]
+                    fixed_stop_triggered = (
+                        stop_loss_pct is not None
+                        and previous_close
+                        <= float(position.average_cost) * (1 - stop_loss_pct)
+                    )
+                    trailing_peak = trailing_peaks.get(symbol)
+                    trailing_stop_triggered = bool(
+                        trailing_stop_pct is not None
+                        and trailing_peak is not None
+                        and trailing_peak
+                        >= float(position.average_cost) * (1 + trailing_activation_pct)
+                        and previous_close <= trailing_peak * (1 - trailing_stop_pct)
+                    )
+                    if not fixed_stop_triggered and not trailing_stop_triggered:
+                        continue
+                    bar = (
+                        bar_by_symbol.loc[symbol]
+                        if not bar_by_symbol.empty and symbol in bar_by_symbol.index
+                        else None
+                    )
+                    order = OrderRequest(
+                        symbol=symbol,
+                        side="SELL",
+                        quantity=position.quantity,
+                        signal_date=previous_session_date,
+                        execution_date=trade_date,
+                        reason=(
+                            "position stop loss"
+                            if fixed_stop_triggered
+                            else "position trailing stop"
+                        ),
+                    )
+                    result = engine.execute(
+                        account,
+                        order,
+                        bar=bar,
+                        previous_close=last_close.get(symbol),
+                        limit_reference_close=self._limit_reference(
+                            symbol,
+                            trade_date,
+                            last_close.get(symbol),
+                            actions,
+                        ),
+                    )
+                    order_row = self._order_row(
+                        scenario,
+                        previous_session_date,
+                        trade_date,
+                        order,
+                        result,
+                    )
+                    if result.status == "FILLED":
+                        order_row["reason"] = (
+                            "POSITION_STOP_LOSS"
+                            if fixed_stop_triggered
+                            else "POSITION_TRAILING_STOP"
+                        )
+                        risk_exit_symbols.add(symbol)
+                        rebalance_turnover += float(
+                            result.fill_quantity * (result.market_price or Decimal("0"))
+                        )
+                    orders.append(order_row)
+                    rebalance_orders += 1
 
             if has_rebalance:
                 signal_date = execution_signals[trade_date]
@@ -342,6 +418,11 @@ class StrategyBacktestEngine:
                     target_weights,
                     self.strategy_config,
                 )
+                adjusted_weights = {
+                    symbol: weight
+                    for symbol, weight in adjusted_weights.items()
+                    if symbol not in risk_exit_symbols
+                }
                 target_quantities: dict[str, Decimal] = {}
                 for symbol, weight in adjusted_weights.items():
                     if bar_by_symbol.empty or symbol not in bar_by_symbol.index:
@@ -436,6 +517,14 @@ class StrategyBacktestEngine:
 
             for symbol, row in bar_by_symbol.iterrows():
                 last_close[str(symbol)] = float(row["close"])
+            for symbol, position in account.positions.items():
+                if position.quantity <= 0 or symbol not in last_close:
+                    trailing_peaks.pop(symbol, None)
+                    continue
+                trailing_peaks[symbol] = max(
+                    trailing_peaks.get(symbol, float(position.average_cost)),
+                    last_close[symbol],
+                )
             if trade_date in benchmark_series.index:
                 last_benchmark_close = float(benchmark_series.loc[trade_date])
             if last_benchmark_close is None:
@@ -496,6 +585,7 @@ class StrategyBacktestEngine:
                     equity,
                     self.strategy_config,
                 )
+            previous_session_date = trade_date
 
         snapshot_frame = pd.DataFrame(snapshots)
         order_columns = [

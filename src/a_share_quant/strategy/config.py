@@ -35,6 +35,9 @@ class StrategyConfig:
     portfolio_method: str = "inverse_volatility"
     target_volatility: float = 0.15
     covariance_days: int = 60
+    position_stop_loss_pct: float | None = None
+    trailing_stop_pct: float | None = None
+    trailing_activation_pct: float = 0.0
 
 
 def load_strategy_config(
@@ -95,6 +98,17 @@ def load_strategy_config(
         portfolio_method=str(strategy.get("portfolio_method", "inverse_volatility")),
         target_volatility=float(strategy.get("target_volatility", 0.15)),
         covariance_days=int(strategy.get("covariance_days", 60)),
+        position_stop_loss_pct=(
+            float(strategy["position_stop_loss_pct"])
+            if strategy.get("position_stop_loss_pct") is not None
+            else None
+        ),
+        trailing_stop_pct=(
+            float(strategy["trailing_stop_pct"])
+            if strategy.get("trailing_stop_pct") is not None
+            else None
+        ),
+        trailing_activation_pct=float(strategy.get("trailing_activation_pct", 0.0)),
     )
     if config.momentum_days <= 0 or config.trend_days <= 0 or config.volatility_days <= 0:
         raise ValueError("Strategy lookback periods must be positive")
@@ -152,4 +166,12 @@ def load_strategy_config(
         raise ValueError("target_volatility must be in (0, 1)")
     if config.covariance_days <= 1:
         raise ValueError("covariance_days must be greater than one")
+    if config.position_stop_loss_pct is not None and not (
+        0 < config.position_stop_loss_pct < 1
+    ):
+        raise ValueError("position_stop_loss_pct must be in (0, 1)")
+    if config.trailing_stop_pct is not None and not (0 < config.trailing_stop_pct < 1):
+        raise ValueError("trailing_stop_pct must be in (0, 1)")
+    if not 0 <= config.trailing_activation_pct < 1:
+        raise ValueError("trailing_activation_pct must be in [0, 1)")
     return config
